@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=320.1, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="format-detection" content="telephone=no, email=no" />
+    <link href="../css/frozen.css?v=935974?ver=2.3" rel="stylesheet" type="text/css"/>
+    <link href="../font/iconfont.css?v=935974?ver=2.3" rel="stylesheet" type="text/css"/>
+    <link href="../css/hw.weixin.css?v=935974?ver=2.3" rel="stylesheet" type="text/css"/>
+    <style>
+        #ulSelected li
+        {
+            position: relative;
+            margin-left: 0;
+            border-right: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <header class="ui-header ui-header-positive ui-border-b" id="Head_Cont">
+    </header>
+    <section class="ui-container" id="Sec_Cont">
+        <ul class="ui-list ui-list-text">
+            <li>
+                <input id="txtCustoms" type="text" value="马云芳,马艳" />
+                <input id="hidCustoms" type="hidden" value="177262,177263" />
+                <button id="btn" style="border: solid 1px #ccc; background-color: #bbb; padding: 3px 5px;">选择</button>
+            </li>
+        </ul>
+    </section>
+    <header class="ui-header ui-header-positive ui-border-b" id="Head_Edit" style="display: none;">
+    </header>
+    <section class="ui-container ui-center" id="Sec_Edit" style="display: none;">
+        <div id="dlg" style="display: none; width: 100%; height: 100%; border: solid 1px #ccc; position: absolute; top: 0;">
+            <header id="header" class="ui-header ui-header-positive ui-border-b" style="z-index: 1;">
+                <ul class="ui-tiled">
+                    <li style="width: 8%;">
+                        <i class="iconfont" onclick="$('#dlg').hide();">&#xe610;</i>
+                    </li>
+                    <li id="liComQry" style="width: 84%; text-align: right;">全部&nbsp;<i class="iconfont">&#xe60d;</i>
+                    </li>
+                    <li style="width: 8%;">
+                        <button id="btnSure" class="ui-btn">
+                            确定
+                        </button>
+                    </li>
+                </ul>
+            </header>
+            <%--<div class="ui-dlg-header">人员选择</div>--%>
+            <div class="ui-dlg-content" style="position: absolute; top: 45px;">
+                <div id="divSearch" style="padding: 3px;">
+                    <label id="lbSearch" class="item item-input" style="display: inline-block; border: 1px solid #ccc; line-height: 25px;">
+                        <i class="iconfont">&#xe60b;</i><input id="txtSearch" placeholder="搜索客户名称" type="text" style="padding-right: 0;" /><i id="iClearSearch" class="iconfont">&#xe609;</i>
+                    </label>
+                    <button id="btnSearch" class="ui-btn ui-btn-primary" style="display: none; margin-right: 5px;">搜索</button>
+                    <button id="btnCancelSearch" class="ui-btn ui-btn-primary" style="margin-right: 5px;">取消</button>
+                </div>
+                <section class="ui-container" style="position: relative; border-top-width: 0;">
+                    <ul id="dg" class="ui-list ui-list-text ui-border-b" style="display: none;">
+                        <li data-index="{{index}}" class="ui-border-t" style="border-right: 1px solid #e0e0e0;">
+                            <label class="ui-{{type}}" for="chk-{{id}}">
+                                <input id="chk-{{id}}" type="{{type}}" name="Custom" value="{{id}}" title="{{Custom_Name}}" />
+                                {{Custom_Name}}
+                            </label>
+                        </li>
+                    </ul>
+                    <div class="ui-footer ui-footer-stable ui-btn-group ui-border-t">
+                        <button id="btnPrev" class="ui-btn-lg ui-btn-primary">上一页</button>
+                        <button id="btnNext" class="ui-btn-lg ui-btn-primary">下一页</button>
+                        <button id="btnClear" class="ui-btn-lg ui-btn-primary">清空</button>
+                        <button id="btnSelected" class="ui-btn-lg ui-btn-primary">已选择(0)</button>
+                    </div>
+                </section>
+            </div>
+            <div id="divSelected" style="position: absolute; right: 10px; display: none;">
+            </div>
+        </div>
+    </section>
+</div>
+<div id="Js_Include">
+    <script type="text/javascript" src="../lib/zepto.min.js?v=935974?ver=2.3"></script>
+    <script type="text/javascript" src="../js/stretch.datalist.js?v=935974?ver=2.3"></script>
+    <script type="text/javascript" src="../lib/frozen.js?v=935974?ver=2.3"></script>
+</div>
+<script type="text/javascript">
+    var hwPage;
+    var CHECKEDITEM = [];
+    $(function () {
+        var $btn = $('#btn'),
+                $dlg = $('#dlg'),
+                $lbSearch = $('#lbSearch'),
+                $txtSearch = $('#txtSearch'),
+                $btnClear = $('#btnClear'),
+                $btnSelected = $('#btnSelected'),
+                $btnSure = $('#btnSure'),
+                $iClearSearch = $('#iClearSearch'),
+                $btnSearch = $('#btnSearch'),
+                $btnCancelSearch = $('#btnCancelSearch'),
+                $divSelected = $('#divSelected'),
+                $inputs;
+
+        //人员选择按钮点击事件
+        $btn.click(function () {
+            CHECKEDITEM = [];
+            var nameList = $('#txtCustoms').val().split(',');
+            var idList = $('#hidCustoms').val().split(',');
+            for (var i = 0; i < idList.length; i++) {
+                CHECKEDITEM.push({
+                    id: idList[i],
+                    name: nameList[i]
+                });
+            }
+            if (!hwPage) {
+                //列表
+                hwPage = new hwpage({
+                    url: 'Page1.aspx?action=customlist',
+                    checkbox: true,
+                    multiple: true,
+                    getQueryParams: function () {
+                        return {
+                            Key_Words: $txtSearch.val(),
+                            type: $('#ul-ComQry li.ui-selected').attr('data-value'),
+                            Area: getChecked('Area'),
+                            Level: getChecked('Level'),
+                            Property: getChecked('Property'),
+                            sort: getChecked('sort')
+                        }
+                    },
+                    onLoadSuccess: function () {
+                        $inputs = $('#dg li input[name=Custom]');
+                        //复选框选中事件绑定
+                        $inputs.each(function () {
+                            var $self = $(this);
+                            var type = $self.attr('type');
+                            switch (type) {
+                                case 'checkbox':
+                                    var value = $self.val();
+                                    var index = -1;
+                                    for (var i = 0; i < CHECKEDITEM.length; i++) {
+                                        var item = CHECKEDITEM[i];
+                                        if (item.id == value) {
+                                            index = i;
+                                            break;
+                                        }
+                                    }
+                                    $self.click(function () {
+                                        var index = -1;
+                                        for (var i = 0; i < CHECKEDITEM.length; i++) {
+                                            var item = CHECKEDITEM[i];
+                                            if (item.id == value) {
+                                                index = i;
+                                                break;
+                                            }
+                                        }
+                                        if ($self.attr('checked')) {
+                                            if (index == -1) {
+                                                CHECKEDITEM.push({
+                                                    id: value,
+                                                    name: $self.attr('title')
+                                                });
+                                            }
+                                        } else {
+                                            if (index >= 0) {
+                                                CHECKEDITEM.splice(index, 1);
+                                            }
+                                        }
+                                        $btnSelected.html('已选择(' + CHECKEDITEM.length + ')');
+                                    });
+                                    if (index >= 0 && !$self.attr('checked')) {
+                                        $self.click();
+                                    }
+                                    break;
+                                case 'radio':
+                                    var value = $self.val();
+                                    var index = -1;
+                                    for (var i = 0; i < CHECKEDITEM.length; i++) {
+                                        var item = CHECKEDITEM[i];
+                                        if (item.id == value) {
+                                            index = i;
+                                            break;
+                                        }
+                                    }
+                                    $self.click(function () {
+                                        CHECKEDITEM = [{ id: value, name: $self.attr('title') }];
+                                        $btnSelected.html('已选择(' + CHECKEDITEM.length + ')');
+                                        sure();
+                                    });
+                                    if (index >= 0 && !$self.attr('checked')) {
+                                        $self.attr('checked', true);
+                                    }
+                                    break;
+                            }
+                        });
+
+                        //绑定清空按钮
+                        $btnClear.click(function () {
+                            $inputs.each(function () {
+                                var $self = $(this);
+                                if ($self.attr('checked')) {
+                                    $self.click();
+                                }
+                            });
+                            CHECKEDITEM = [];
+                        });
+                    }
+                });
+            } else {
+                hwPage.load();
+            }
+            $dlg.show();
+            $divSelected.hide();
+        });
+
+        //已选择按钮点击事件
+        $btnSelected.click(function () {
+            $divSelected.css({
+                bottom: $btnSelected.parent().height() + 'px',
+                width: $btnSelected.width() + 'px'
+            });
+            if ($divSelected.css('display') === 'none') {
+                var html = '<ul id="ulSelected" class="ui-list ui-list-pure ui-border-b">';
+                for (var i = 0; i < CHECKEDITEM.length; i++) {
+                    var item = CHECKEDITEM[i];
+                    html += '<li class="ui-border-t" style="text-align:center;" data-id="' + item.id + '">' + item.name + '</li>';
+                }
+                html += '</ul>';
+                $divSelected.html(html).show();
+
+                //todo li 绑定 左滑事件
+
+                var clientWidth, startPositionX, endPositionX, deltaX, width;// 按钮宽度
+                //绑定列表的划动事件
+                $('#ulSelected>li').bind('touchstart', function (e) {
+                    var $self = $(this);
+                    var touch = e.touches[0];
+                    startPositionX = touch.pageX;
+                    clientWidth = $(this)[0].clientWidth;
+                    $self.css({ 'z-index': 9999 }).siblings().css({ left: 0, 'z-index': 0 });
+                    width = $self.width();
+                    //解决android下touchmove只执行一下,touchend不触发的bug
+                    event.preventDefault();
+                }).bind('touchmove', function (e) {
+                    var $self = $(this);
+                    var touch = e.touches[0];
+                    //android下 表达式中直接访问对象的属性值为空
+                    endPositionX = touch.pageX;
+                    deltaX = endPositionX - startPositionX;
+                    if (deltaX >= -width && deltaX <= 0) {//两个按钮宽度之内
+                        $self.css({ left: deltaX + 'px' });
+                    }
+                }).bind('touchend', function (e) {
+                    var $self = $(this);
+                    if (deltaX >= -width / 4 && deltaX <= 0) {//一个按钮距离之内
+                        $self.hwSlide(deltaX, 0, 0.01);
+                    } else if (deltaX >= -width && deltaX <= -width / 4) {//两个按钮宽度之内
+                        $self.hwSlide(deltaX, -width, 0.5, function () {
+                            $self.remove();
+                            var index = -1;
+                            var value = $self.attr('data-id');
+                            for (var i = 0; i < CHECKEDITEM.length; i++) {
+                                var item = CHECKEDITEM[i];
+                                if (item.id == value) {
+                                    index = i;
+                                    break;
+                                }
+                            }
+                            CHECKEDITEM.splice(index, 1);
+                            $inputs.each(function () {
+                                var $self = $(this);
+                                if ($self.val() == value) {
+                                    $self.click();
+                                }
+                            });
+
+                        });
+                    }
+                });
+            } else {
+                $divSelected.hide();
+            }
+        });
+
+        //显示详细信息
+        var ShowCont = function () {
+            $("#Sec_Edit").hide();
+            $("#Head_Edit").hide();
+            $("#Sec_Cont").show();
+            $("#Head_Cont").show();
+        };
+
+        //取消保存
+        var EditCancel = function () {
+            ShowCont();
+        };
+
+        //保存
+        var EditSave = function () {
+            ShowCont();
+        };
+
+        function sure() {
+            $dlg.hide();
+            //todo 选中后处理事件
+            var idList = '', nameList = '';
+            for (var i = 0; i < CHECKEDITEM.length; i++) {
+                var item = CHECKEDITEM[i];
+                idList += item.id + ',';
+                nameList += item.name + ',';
+            }
+            if (idList.length > 0) {
+                idList = idList.substring(0, idList.length - 1);
+            }
+            if (nameList.length > 0) {
+                nameList = nameList.substring(0, nameList.length - 1);
+            }
+            $('#txtCustoms').val(nameList);
+            $('#hidCustoms').val(idList);
+        }
+
+        //确定按钮点击事件
+        $btnSure.click(function () {
+            sure();
+        });
+
+        //搜索框回车搜索
+        $txtSearch[0].oninput = function () {
+            if ($txtSearch.val().length > 0) {
+                $btnSearch.show();
+                $btnCancelSearch.hide();
+            } else {
+                $btnSearch.hide();
+                $btnCancelSearch.show();
+            }
+        };
+        //搜索按钮点击
+        $btnSearch.click(function () {
+            hwPage.reload();
+            $txtSearch.focus();
+        });
+        //清空搜索框
+        $iClearSearch.click(function () {
+            $txtSearch.val('').focus();
+        });
+        //搜索框回车
+        $txtSearch.keydown(function () {
+            console.log('keydown');
+            if (event.keyCode == 13) {
+                hwPage.reload();
+            }
+        });
+        //取消搜索
+        $btnCancelSearch.click(function () {
+            $divSearch.hide();
+            $ulHeaderMenu.show();
+            $txtSearch.val('');
+        });
+
+        //屏幕大小自适应
+        resize();
+        $(window).resize(resize);
+        function resize() {
+            var width = window.innerWidth;
+            $lbSearch.css({ width: width - 95 + 'px' });
+            $txtSearch.css({ width: width - 138 + 'px' });
+        };
+    });
+</script>
+</body>
+</html>

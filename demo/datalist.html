@@ -89,7 +89,7 @@
         </div>
     </div>
     <section class="ui-container" style="position: relative; top: 90px; border-top-width: 0;">
-        <ul id="dg" class="ui-list ui-list-pure ui-border-b" style="display: none;">
+        <ul id="dg" class="hw-datalist ui-list ui-list-pure ui-border-b" style="display: none;">
             <li data-index="{{index}}" class="ui-border-t">
                 <div class="ui-list-info">
                     <ul class="ui-tiled">
@@ -104,17 +104,16 @@
             </li>
         </ul>
         <div class="ui-footer ui-footer-stable ui-btn-group ui-border-t">
-            <button id="btnFirst" class="ui-btn-lg ui-btn-primary">首页</button>
-            <button id="btnPrev" class="ui-btn-lg ui-btn-primary">上一页</button>
-            <button id="btnNext" class="ui-btn-lg ui-btn-primary">下一页</button>
-            <button id="btnLast" class="ui-btn-lg ui-btn-primary">尾页</button>
+            <button id="btnFirst" class="hw-btn-paged ui-btn-lg ui-btn-primary">首页</button>
+            <button id="btnPrev" class="hw-btn-paged ui-btn-lg ui-btn-primary">上一页</button>
+            <button id="btnNext" class="hw-btn-paged ui-btn-lg ui-btn-primary">下一页</button>
+            <button id="btnLast" class="hw-btn-paged ui-btn-lg ui-btn-primary">尾页</button>
         </div>
     </section>
-    <input id="HidPage" type="hidden"/>
-    <input id="HidPageIndex" type="hidden"/>
 </div>
 <div id="Js_Include">
     <script type="text/javascript" src="../lib/zepto.min.js?v=935974?ver=2.3"></script>
+    <script type="text/javascript" src="../js/stretch.slider.js?v=935974?ver=2.3"></script>
     <script type="text/javascript" src="../js/stretch.datalist.js?v=935974?ver=2.3"></script>
     <script type="text/javascript" src="../lib/frozen.js?v=935974?ver=2.3"></script>
 </div>
@@ -147,14 +146,19 @@
             url: 'datalist.json',
             buttons: [
                 {
-                    text: '编辑', btnCls: 'hw-btn-edit', handler: function (id) {
-                    console.log('编辑', id);
-                }
+                    text: '详细信息', btnCls: 'hw-btn-more', handler: function (row) {
+                        console.log('详细信息', row);
+                    }
                 },
                 {
-                    text: '删除', btnCls: 'hw-btn-delete', handler: function (id) {
-                    console.log('删除', id);
-                }
+                    text: '编辑', btnCls: 'hw-btn-edit', handler: function (row) {
+                        console.log('编辑', row);
+                    }
+                },
+                {
+                    text: '删除', btnCls: 'hw-btn-delete', handler: function (row) {
+                        console.log('删除', row);
+                    }
                 }
             ],
             getQueryParams: function () {
@@ -169,6 +173,11 @@
             }
         });
 
+        /**
+         * @获取指定name的选择框的选中项
+         * @name {String} 选择框的name属性值
+         * @返回值 选中项字符串,以','分隔
+         * */
         function getChecked(name) {
             var checked = '';
             $('input[name=' + name + ']:checked').forEach(function (e) {
@@ -399,20 +408,6 @@
     //新增
     function add() {
         location.href = 'Page3.aspx?Id=0';
-    }
-
-    function toggleCommonQry() {
-        var $ul = $('#ulCommonQry');
-        var display = $ul.css('display');
-        if (display == 'none') {
-            $ul.show();
-        } else {
-            $ul.hide();
-        }
-    }
-    function showSearch() {
-        $lbSearch.show();
-        $txtSearch.focus();
     }
 </script>
 </body>
