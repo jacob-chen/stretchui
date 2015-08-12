@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Header1" runat="server">
+    <title>我的客户</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=320.1, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+    <meta name="format-detection" content="telephone=no, email=no"/>
+    <link href="../css/frozen.css?v=935974?ver=2.3" rel="stylesheet" type="text/css"/>
+    <link href="../font/iconfont.css?v=935974?ver=2.3" rel="stylesheet" type="text/css"/>
+    <link href="../css/hw.weixin.css?v=935974?ver=2.3" rel="stylesheet" type="text/css"/>
+</head>
+<body ontouchstart>
+<div>
+    <header id="header" class="ui-header ui-header-positive ui-border-b" style="z-index: 1;">
+        <ul class="ui-tiled">
+            <li style="width: 8%;">
+                <i class="iconfont" onclick="history.back()">&#xe610;</i>
+            </li>
+            <li id="liComQry" style="width: 84%; text-align: right;">全部&nbsp;<i class="iconfont">&#xe60d;</i>
+            </li>
+            <li style="width: 8%;">
+                <i class="iconfont" onclick="add()">&#xe61e;</i>
+            </li>
+        </ul>
+    </header>
+    <ul id="ulHeaderMenu" class="ui-tiled ui-header-menu">
+        <li id="li-search">搜索</li>
+        <li id="li-advQry">筛选条件&nbsp;<i class="iconfont">&#xe60d;</i>
+        </li>
+        <li id="li-sort">排序&nbsp;<i class="iconfont">&#xe60d;</i></li>
+    </ul>
+    <div id="divSearch" style="padding: 3px; position: absolute; top: 45px; display: none;">
+        <label id="lbSearch" class="item item-input"
+               style="display: inline-block; border: 1px solid #ccc; line-height: 25px;">
+            <i class="iconfont">&#xe60b;</i><input id="txtSearch" placeholder="搜索客户名称" type="text"
+                                                   style="padding-right: 0;"/><i id="iClearSearch" class="iconfont">
+            &#xe609;</i>
+        </label>
+        <button id="btnSearch" class="ui-btn ui-btn-primary" style="display: none; margin-right: 5px;">搜索</button>
+        <button id="btnCancelSearch" class="ui-btn ui-btn-primary" style="margin-right: 5px;">取消</button>
+    </div>
+    <div id="dlg-ComQry" class="ui-dropmenu ui-in ui-pos-bottom-center" style="display: none; top: 40px;">
+        <ul id="ul-ComQry" class="ui-dropmenu-items" style="height: 200px; overflow: scroll;">
+        </ul>
+        <span class="ui-arrow"></span>
+    </div>
+    <div id="dlg-Sort" class="ui-dialog" style="top: 90px;">
+        <ul id="ul-Sort" class="ui-list ui-list-text ui-list-radio ui-border-tb" style="top: 90px;">
+            <li class="ui-border-t">
+                <label class="ui-radio">
+                    <input type="radio" value="Create_Time desc" name="sort"/>
+                    按创建时间倒序
+                </label>
+            </li>
+            <li class="ui-border-t">
+                <label class="ui-radio">
+                    <input type="radio" value="Custom_Name" checked="checked" name="sort"/>
+                    按客户名称正序
+                </label>
+            </li>
+        </ul>
+    </div>
+    <div id="dlg-AdvQry" class="ui-dialog" style="top: 90px;">
+        <div id="div-AdvQry" style="position: absolute; top: 0px; width: 100%; height: 200px; background-color: #fff;">
+            <ul id="ul-AdvQry" class="ui-list ui-list-text ui-list-link ui-border-tb ui-menu">
+                <li id="li-Area">
+                    <div class="ui-list-info">
+                        <h4 class="ui-nowrap">区域</h4>
+                    </div>
+                </li>
+                <li id="li-Level">
+                    <div class="ui-list-info">
+                        <h4 class="ui-nowrap">客户级别</h4>
+                    </div>
+                </li>
+                <li id="li-Property">
+                    <div class="ui-list-info">
+                        <h4 class="ui-nowrap">单位性质</h4>
+                    </div>
+                </li>
+            </ul>
+            <div class="ui-menu-footer" style="position: absolute; top: 200px;">
+                <button id="btnSure" class="ui-btn ui-btn-primary ui-btn-menu-left">确定</button>
+                <button id="btnClear" class="ui-btn ui-btn-primary ui-btn-menu-right">清空</button>
+            </div>
+        </div>
+    </div>
+    <section class="ui-container" style="position: relative; top: 90px; border-top-width: 0;">
+        <ul id="dg" class="ui-list ui-list-pure ui-border-b" style="display: none;">
+            <li data-index="{{index}}" class="ui-border-t">
+                <div class="ui-list-info">
+                    <ul class="ui-tiled">
+                        <li class="header-left" style="width: 60%;">
+                            <h4 class="ui-nowrap">{{Custom_Name}}</h4>
+                        </li>
+                        <li class="header-left" style="width: 40%;">
+                            <h4 class="ui-nowrap">{{Create_Time}}</h4>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+        <div class="ui-footer ui-footer-stable ui-btn-group ui-border-t">
+            <button id="btnFirst" class="ui-btn-lg ui-btn-primary">首页</button>
+            <button id="btnPrev" class="ui-btn-lg ui-btn-primary">上一页</button>
+            <button id="btnNext" class="ui-btn-lg ui-btn-primary">下一页</button>
+            <button id="btnLast" class="ui-btn-lg ui-btn-primary">尾页</button>
+        </div>
+    </section>
+    <input id="HidPage" type="hidden"/>
+    <input id="HidPageIndex" type="hidden"/>
+</div>
+<div id="Js_Include">
+    <script type="text/javascript" src="../lib/zepto.min.js?v=935974?ver=2.3"></script>
+    <script type="text/javascript" src="../js/stretch.datalist.js?v=935974?ver=2.3"></script>
+    <script type="text/javascript" src="../lib/frozen.js?v=935974?ver=2.3"></script>
+</div>
+<script type="text/javascript">
+    $(function () {
+        //zepto对象
+        var $dg = $('#dg'),
+            $advQryLis = $('#ul-AdvQry li'),
+            $liComQry = $('#liComQry'),
+            $liSearch = $('#li-search'),
+            $liAdvQry = $('#li-advQry'),
+            $liSort = $('#li-sort'),
+            $dlgComQry = $('#dlg-ComQry'),
+            $dlgAdvQry = $('#dlg-AdvQry'),
+            $dlgSort = $('#dlg-Sort'),
+            $ulComQry = $('#ul-ComQry'),
+            $ulHeaderMenu = $('#ulHeaderMenu'),
+            $divSearch = $('#divSearch'),
+            $lbSearch = $('#lbSearch'),
+            $txtSearch = $('#txtSearch'),
+            $iClearSearch = $('#iClearSearch'),
+            $ulSort = $('#ul-Sort'),
+            $btnSearch = $('#btnSearch'),
+            $btnCancelSearch = $('#btnCancelSearch'),
+            $btnSure = $('#btnSure'),
+            $btnClear = $('#btnClear');
+
+        var checkedCondition = [];
+        $dg.datalist({
+            url: 'datalist.json',
+            buttons: [
+                {
+                    text: '编辑', btnCls: 'hw-btn-edit', handler: function (id) {
+                    console.log('编辑', id);
+                }
+                },
+                {
+                    text: '删除', btnCls: 'hw-btn-delete', handler: function (id) {
+                    console.log('删除', id);
+                }
+                }
+            ],
+            getQueryParams: function () {
+                return {
+                    Key_Words: $txtSearch.val(),
+                    type: $('#ul-ComQry li.ui-selected').attr('data-value'),
+                    Area: getChecked('Area'),
+                    Level: getChecked('Level'),
+                    Property: getChecked('Property'),
+                    sort: getChecked('sort')
+                }
+            }
+        });
+
+        function getChecked(name) {
+            var checked = '';
+            $('input[name=' + name + ']:checked').forEach(function (e) {
+                checked += $(e).val() + ',';
+            });
+            if (checked[checked.length - 1] == ',') {
+                checked = checked.substring(0, checked.length - 1);
+            }
+            return checked;
+        }
+
+        //加载快速搜索列表
+        $.post('Page1.aspx?action=qrycom', {}, function (data) {
+            var html = '';
+            for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                var selected = '';
+                if (i == 0) {
+                    selected = 'class="ui-selected"';
+                }
+                html += '<li data-value="' + item.Search_ID + '" ' + selected + '>' + item.Search_Name + '</li>';
+            }
+            $ulComQry.html(html);
+            $ulComQry.find('li').click(function () {
+                $(this).addClass('ui-selected').siblings().removeClass('ui-selected');
+
+                $dg.datalist('reload');
+                $dlgComQry.hide();
+            });
+        }, 'json');
+        //点击关闭弹出层
+        $(document).click(function () {
+            var left = (window.innerWidth - 125) / 2;
+            var right = left + 125;
+            var top = 45;
+            var bottom = 45 + 200;
+            var clientX = event.clientX;
+            var clientY = event.clientY;
+            if (clientX <= left || clientX >= right || clientY <= top || clientY >= bottom) {
+                if ($dlgComQry.css('display') != 'none') {
+                    $dlgComQry.hide();
+                }
+            }
+        });
+        //快速搜索显示
+        $liComQry.unbind('click').click(function () {
+            if ($dlgComQry.css('display') == 'none') {
+                $dlgComQry.show();
+            }
+            return false;
+        });
+        //加载筛选条件
+        $advQryLis.click(function () {
+            var $self = $(this);
+            var id = this.id.split('-')[1];
+            if (!$self.attr('inited')) {
+                var action = 'get' + id.toLowerCase();
+                $.post('Page1.aspx?action=' + action, {}, function (data) {
+                    var html = ' <ul id="ul-' + id + '" class="ui-list ui-list-text ui-border-b ui-menu" style="left: 50%; background-color: #f4f4f4;">';
+                    for (var i = 0; i < data.length; i++) {
+                        var item = data[i];
+                        html += '<li><label class="ui-checkbox"><input id="chk-' + id + '-' + item.value + '" type="checkbox" name="' + id + '" value="' + item.value + '" />' + item.text + '</label></li>';
+                    }
+                    html += '</ul>';
+                    $('#div-AdvQry').append(html);
+                    $('#ul-' + id).show().siblings().filter('[name=AdvQry]').hide();
+                    $self.attr('inited', true);
+                    resize();
+
+                    //绑定事件
+                    var $checkboxs = $('#ul-' + id + ' input[type=checkbox]');
+                    $checkboxs.click(function () {
+                        var $badgeNum = $self.find('div.ui-badge-num');
+                        var num = $checkboxs.filter(':checked').length;
+                        $badgeNum.remove();
+                        if (num > 0) {
+                            $self.append('<div class="ui-badge-num">' + num + '</div>');
+                        }
+                    });
+                }, 'json');
+            } else {
+                $('#ul-' + id).show().siblings().not('#ul-AdvQry').hide();
+            }
+            $self.css({'background-color': '#f4f4f4'}).siblings().css({'background-color': '#fff'});
+        });
+        //选中筛选条件首项
+        $advQryLis.first().click();
+        //搜索
+        $liSearch.click(function () {
+            $ulHeaderMenu.hide();
+            $divSearch.show();
+            $txtSearch.show().focus();
+        });
+        //筛选条件
+        $liAdvQry.click(function () {
+            if ($dlgAdvQry.css('display') == 'none') {
+                $('#div-AdvQry input[type=checkbox]').each(function () {
+                    var $self = $(this);
+                    if ($self.attr('checked')) {
+                        $self.click();
+                    }
+                });
+                checkedCondition.forEach(function (dom) {
+                    dom.click();
+                });
+                $dlgSort.dialog('hide');
+                $dlgAdvQry.dialog('show');
+            } else {
+                $dlgAdvQry.dialog('hide');
+            }
+        });
+        //排序
+        $liSort.click(function () {
+            if ($dlgSort.css('display') == 'none') {
+                $ulSort.show();
+                $dlgSort.dialog('show');
+                $dlgAdvQry.dialog('hide');
+            } else {
+                $ulSort.hide();
+                $dlgSort.dialog('hide');
+                $dlgAdvQry.dialog('hide');
+            }
+        });
+        //选定排序
+        $ulSort.find('input[type=radio]').click(function () {
+            $dg.datalist('reload');
+            $dlgSort.dialog('hide');
+        });
+        //点击弹出层其他部位关闭弹出层
+        $('#header,#li-search').click(function () {
+            $dlgAdvQry.dialog('hide');
+            $dlgSort.dialog('hide');
+        });
+        $dlgAdvQry.click(function () {
+            if (event.clientY >= 340) {
+                $dlgAdvQry.dialog('hide');
+            }
+        });
+        $dlgSort.click(function () {
+            if (event.clientY >= 190) {
+                $dlgSort.dialog('hide');
+            }
+        });
+        //弹出层显示,关闭事件
+        $dlgAdvQry.on("dialog:show", function (e) {
+            $liAdvQry.find('i').html('&#xe60e;');
+        }).on("dialog:hide", function (e) {
+            $liAdvQry.find('i').html('&#xe60d;');
+        });
+        $dlgSort.on("dialog:show", function (e) {
+            $liSort.find('i').html('&#xe60e;');
+        }).on("dialog:hide", function (e) {
+            $liSort.find('i').html('&#xe60d;');
+        });
+        //屏幕大小自适应
+        $(window).resize(resize);
+        function resize() {
+            var width = window.innerWidth;
+            $lbSearch.css({width: width - 95 + 'px'});
+            $txtSearch.css({width: width - 138 + 'px'});
+            $('label.ui-checkbox').css({width: (width - 60) / 2 + 'px'});
+            $ulComQry.css({left: (width - 250) / 2 + 'px'});
+            $dlgComQry.css({left: (width - 125) / 2 + 'px'});
+        };
+
+        //搜索框回车搜索
+        $txtSearch[0].oninput = function () {
+            if ($txtSearch.val().length > 0) {
+                $btnSearch.show();
+                $btnCancelSearch.hide();
+            } else {
+                $btnSearch.hide();
+                $btnCancelSearch.show();
+            }
+        };
+        //搜索按钮点击
+        $btnSearch.click(function () {
+            $dg.datalist('reload');
+            $txtSearch.focus();
+        });
+        //清空搜索框
+        $iClearSearch.click(function () {
+            $txtSearch.val('').focus();
+        });
+        //搜索框回车
+        $txtSearch.keydown(function () {
+            if (event.keyCode == 13) {
+                $dg.datalist('reload');
+            }
+        });
+        //取消搜索
+        $btnCancelSearch.click(function () {
+            $divSearch.hide();
+            $ulHeaderMenu.show();
+            $txtSearch.val('');
+        });
+        //确认筛选条件
+        $btnSure.click(function () {
+            checkedCondition = [];
+            $('#div-AdvQry input[type=checkbox]').each(function () {
+                var $self = $(this);
+                if ($self.attr('checked')) {
+                    checkedCondition.push($self);
+                }
+            });
+            $dg.datalist('reload');
+            $dlgAdvQry.dialog('hide');
+            $liAdvQry.find('i').css({color: '#000'});
+            $('#ul-AdvQry li').each(function () {
+                if ($(this).find('div.ui-badge-num').length > 0) {
+                    $liAdvQry.find('i').css({color: '#18b4ed'});
+                }
+            });
+        });
+        //清空筛选条件
+        $btnClear.click(clearCondition);
+        function clearCondition() {
+            checkedCondition = [];
+            $('#div-AdvQry input[type=checkbox]').each(function () {
+                var $self = $(this);
+                if ($self.attr('checked')) {
+                    $self.click();
+                }
+            });
+            $liAdvQry.find('i').css({color: '#000'});
+        }
+    });
+    //新增
+    function add() {
+        location.href = 'Page3.aspx?Id=0';
+    }
+
+    function toggleCommonQry() {
+        var $ul = $('#ulCommonQry');
+        var display = $ul.css('display');
+        if (display == 'none') {
+            $ul.show();
+        } else {
+            $ul.hide();
+        }
+    }
+    function showSearch() {
+        $lbSearch.show();
+        $txtSearch.focus();
+    }
+</script>
+</body>
+</html>
