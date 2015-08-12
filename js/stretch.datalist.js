@@ -1,6 +1,6 @@
 ﻿(function ($) {
     //分页控件
-    function datalist(zp,options) {
+    function datalist(zp, options) {
         var self = this;
         self.options = $.extend(self.options, options);//私有变量
         self.zepto = zp;
@@ -9,7 +9,8 @@
 
     datalist.prototype = {
         options: {page: 1, rows: 5, total: 0},
-        zepto:null,
+        zepto: null,
+        data: {},
         template: '',
         btnHtml: '',
         init: function () {
@@ -30,7 +31,7 @@
                 if (buttons && buttons.length > 0) {
                     for (var j = 0; j < buttons.length; j++) {
                         var button = buttons[j];
-                        self.btnHtml += '<span class="' + button.btnCls + '" data-index="' + i + '">' + button.text + '</span>';
+                        self.btnHtml += '<span class="hw-btn-list ' + button.btnCls + '" data-index="' + i + '">' + button.text + '</span>';
                     }
                 }
             }
@@ -47,15 +48,16 @@
                 page: self.options.page,
                 rows: self.options.rows
             }, self.options.getQueryParams()), function (data) {
-                var $dg = self.zepto;
+                self.data = data;
+                var $dl = self.zepto;
                 if (!self.isInited) {
                     // 第一次加载 需要初始化分页控件
                     self.isInited = true;
-                    self.template = $('#dg').html();
-                    $dg.html(self.formatter(data.rows)).show()
+                    self.template = $dl.html();
+                    $dl.html(self.formatter(data.rows)).show()
                         .parent().append(self.btnHtml + '<div class="ui-footer ui-footer-stable ui-btn-group ui-border-t"><button id="btnFirst" class="ui-btn-lg ui-btn-primary">首页</button><button id="btnPrev" class="ui-btn-lg ui-btn-primary">上一页</button><button id="btnNext" class="ui-btn-lg ui-btn-primary">下一页</button><button id="btnLast" class="ui-btn-lg ui-btn-primary">尾页</button></div>');
                     // 绑定翻页控件
-                    $('button.ui-btn-lg').click(function () {
+                    $('button.hw-btn-paged').click(function () {
                         self.options.page = self.options.page || 1;
                         switch (this.id) {
                             case 'btnFirst':
@@ -75,110 +77,49 @@
                     });
                 } else {
                     // 再次加载，不用初始化分页控件
-                    $dg.html(self.formatter(data.rows));
+                    $dl.html(self.formatter(data.rows));
                 }
 
-                var clientWidth, height, startLeft, startPositionX, startPositionY, endPositionX, deltaX, btnWidth, btnEditWidth, btnDelWidth;// 按钮宽度
-                //todo 遍历buttons 并定位
-                $('.hw-btn-delete').each(function () {
-                    var $self = $(this);
-                    var index = parseInt($self.attr('data-index'));
-                    var windowWidth = window.innerWidth;
-                    btnDelWidth = $self.width();
-                    height = $('#dg>li').first().height();
-                    $self.css({
-                        height: (height) + 'px',
-                        'line-height': height + 'px',
-                        left: (windowWidth - btnDelWidth) + 'px',
-                        top: (index * height) + 'px'
-                    });
-                });
-                $('.hw-btn-edit').each(function () {
-                    var $self = $(this);
-                    var index = parseInt($self.attr('data-index'));
-                    var windowWidth = window.innerWidth;
-                    btnEditWidth = $self.width();
-                    btnWidth = btnDelWidth + btnEditWidth;
-                    $self.css({
-                        height: (height) + 'px',
-                        'line-height': height + 'px',
-                        left: (windowWidth - btnWidth) + 'px',
-                        top: (index * height) + 'px'
-                    });
-                });
-
-                //绑定列表
-                $('#dg>li').bind('touchstart', function (e) {
-                    var $self = $(this);
-                    var touch = e.touches[0];
-                    startPositionX = touch.pageX;
-                    startPositionY = touch.pageY;
-                    clientWidth = $(this)[0].clientWidth;
-                    startLeft = $self.offset().left;
-                    //解决android下touchmove只执行一下,touchend不触发的bug
-                    event.preventDefault();
-                }).bind('touchmove', function (e) {
-                    var $self = $(this);
-                    var touch = e.touches[0];
-                    //android下 表达式中直接访问对象的属性值为空
-                    endPositionX = touch.pageX;
-                    deltaX = endPositionX - startPositionX;
-                    if (deltaX < 0) { // 向左划动
-                        $('#li-search').html(deltaX);
-                        if (-startLeft - deltaX <= btnWidth) {//两个按钮宽度之内
-                            //todo left 不是从deltaX曲奇
-                            $self.css({left: startLeft + deltaX + 'px', 'z-index': 9999}).siblings().css({
-                                left: 0,
-                                'z-index': 0
+                //遍历buttons 定位 绑定点击事件
+                var btnWidth, firstBtnWidth;
+                var buttons = self.options.buttons;
+                if (buttons && buttons.length > 0) {
+                    btnWidth = 0;
+                    for (var j = buttons.length - 1; j >= 0; j--) {
+                        var button = buttons[j];
+                        var $buttons = $('span.' + button.btnCls);
+                        if ($buttons.length > 0) {
+                            var _width = $buttons.first().width();
+                            if (j == buttons.length - 1) {
+                                firstBtnWidth = _width;
+                            }
+                            btnWidth += _width;
+                        }
+                        $buttons.each(function () {
+                            var $self = $(this);
+                            var index = parseInt($self.attr('data-index'));
+                            var windowWidth = window.innerWidth;
+                            var height = $dl.children().first().height();
+                            $self.css({
+                                height: (height) + 'px',
+                                'line-height': height + 'px',
+                                left: (windowWidth - btnWidth) + 'px',
+                                top: (index * height) + 'px'
                             });
-                        } else {
-                            //todo 字体滑动 暂不做
-                        }
-                    } else {//  向右划动
-                        if (-startLeft - deltaX <= btnDelWidth) {//一个按钮距离之内
-                            slide($self, deltaX, 0);
-                        } else if (-startLeft - deltaX <= btnWidth) {//两个按钮宽度之内
-                            //todo $self停止左滑,$self中的内容左滑
-                            slide($self, deltaX, -btnWidth);
-                        } else {
-                            //todo 字体滑动恢复
-                        }
-                        //slide($self, left, 0);
+                            $self.click(function () {
+                                var row = data.rows[index];
+                                button.handler(row);
+                            });
+                        })
                     }
-                }).bind('touchend', function (e) {
-                    var $self = $(this);
-                    var left = $self.offset().left;
-                    if (deltaX < 0) { // 向左划动
-                        if (-startLeft - deltaX <= btnDelWidth) {//一个按钮距离之内
-                            slide($self, deltaX, 0);
-                        } else if (-startLeft - deltaX <= btnWidth) {//两个按钮宽度之内
-                            //todo $self停止左滑,$self中的内容左滑
-                            slide($self, deltaX, -btnWidth);
-                        } else {
-                            //todo 字体滑动恢复
-                        }
-                    }
-                });
-
-                //  划动
-                function slide($self, deltaX, end) {
-                    var Hooke = 0.1; //弹性系数
-                    var left = deltaX;
-                    deltaX -= end;
-                    var deltaXSqure = deltaX * deltaX;
-                    var sign = deltaX < 0 ? -1 : 1;
-                    var intervalId = window.setInterval(function () {
-                        var shift = end - left;
-                        shift *= sign;
-                        var step = Hooke * Math.sqrt(deltaXSqure - shift * shift);
-                        step = step == 0 ? 0.1 : step;
-                        step *= sign;
-                        $self.css({left: left -= step, 'z-index': 0});
-                        if (shift > 0) {
-                            clearInterval(intervalId);
-                        }
-                    }, 10);
                 }
+
+                //绑定列表的滑动事件
+                $dl.children().slider({
+                    hooke: 0.2,
+                    totalWidth: btnWidth,
+                    threshold: firstBtnWidth
+                });
 
                 // 分页控件启用与禁用
                 if (self.options.page > 1) {
@@ -216,7 +157,7 @@
         var type = typeof(arg1);
         switch (type) {
             case 'object':
-                $.fn.datalist.obj = new datalist(self,arg1);
+                $.fn.datalist.obj = new datalist(self, arg1);
                 break;
             case 'string':
                 if (typeof($.fn.datalist.method[arg1]) === 'function') {
@@ -235,19 +176,43 @@
         load: function () {
             var obj = $.fn.datalist.obj;
             if (obj) {
-                obj.load();
+                if (typeof(obj.load) == 'function') {
+                    obj.load();
+                } else {
+                    console.error('未找到方法load');
+                }
             }
         },
         reload: function () {
             var obj = $.fn.datalist.obj;
             if (obj) {
-                obj.reload();
+                if (typeof(obj.reload) == 'function') {
+                    obj.reload();
+                } else {
+                    console.error('未找到方法reload');
+                }
+            }
+        },
+        getRow: function (index) {
+            //todo 实现根据index获取行数据的方法
+            var obj = $.fn.datalist.obj;
+            if (obj) {
+                if (typeof(obj.getRow) == 'function') {
+                    obj.getRow(index);
+                } else {
+                    console.error('未找到方法getRow');
+                }
             }
         },
         deleteRow: function (index) {
+            //todo 实现删除行方法
             var obj = $.fn.datalist.obj;
             if (obj) {
-                //todo 实现删除行方法
+                if (typeof(obj.deleteRow) == 'function') {
+                    obj.deleteRow(index);
+                } else {
+                    console.error('未找到方法deleteRow');
+                }
             }
         }
     };
