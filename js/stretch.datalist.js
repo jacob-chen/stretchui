@@ -16,17 +16,130 @@
         init: function () {
             var self = this;
             self.load();
-            return this;
+            self.bindPagination();
         },
-        formatter: function (rows) {
+        bindListButton: function () {
+            var self = this;
+            var zp = self.zepto;
+            var btnWidth, firstBtnWidth;
+            var buttons = self.options.buttons;
+            if (buttons && buttons.length > 0) {
+                btnWidth = 0;
+                for (var j = buttons.length - 1; j >= 0; j--) {
+                    var button = buttons[j];
+                    var $buttons = $('span.' + button.btnCls);
+                    if ($buttons.length > 0) {
+                        var width = $buttons.first().width();
+                        if (j == buttons.length - 1) {
+                            firstBtnWidth = width;
+                        }
+                        btnWidth += width;//获取按钮总宽度
+                    }
+                    //按钮定位
+                    $buttons.each(function () {
+                        var $self = $(this);
+                        var index = parseInt($self.attr('data-index'));
+                        var windowWidth = window.innerWidth;
+                        var height = zp.children().first().height();
+                        $self.css({
+                            height: (height) + 'px',
+                            'line-height': height + 'px',
+                            left: (windowWidth - btnWidth) + 'px',
+                            top: (index * height) + 'px'
+                        });
+                        $self.click(function () {
+                            var row = self.data.rows[index];
+                            button.handler(index, row);
+                        });
+                    })
+                }
+            }
+            //绑定列表的滑动事件
+            zp.children().slider({
+                hooke: 0.2,//胡克弹性系数
+                totalWidth: btnWidth,//滑动最大范围
+                threshold: firstBtnWidth//滑动弹开阈值
+            });
+        },
+        controlPagination: function () {
+            var self = this;
+            var zp = self.zepto;
+            var data=self.data;
+            var $footer = zp.next('div.ui-footer');
+            var $btnPagedFirst = $footer.find('button.hw-btn-paged-first'),
+                $btnPagedLast = $footer.find('button.hw-btn-paged-last'),
+                $btnPagedPrev = $footer.find('button.hw-btn-paged-prev'),
+                $btnPagedNext = $footer.find('button.hw-btn-paged-next');
+            if (self.options.page > 1) {
+                if ($btnPagedFirst) {
+                    $btnPagedFirst.removeAttr('disabled');
+                }
+                if ($btnPagedPrev) {
+                    $btnPagedPrev.removeAttr('disabled');
+                }
+            } else {
+                if ($btnPagedFirst) {
+                    $btnPagedFirst.attr('disabled', 'disabled');
+                }
+                if ($btnPagedPrev) {
+                    $btnPagedPrev.attr('disabled', 'disabled');
+                }
+            }
+            self.options.total = data.total;
+            var totalPage = Math.ceil(self.options.total * 1.0 / self.options.rows);
+            if (self.options.page < totalPage) {
+                if ($btnPagedLast) {
+                    $btnPagedLast.removeAttr('disabled');
+                }
+                if ($btnPagedNext) {
+                    $btnPagedNext.removeAttr('disabled');
+                }
+            } else if (self.options.page > totalPage) {
+                self.options.page = totalPage;
+                self.reload();
+            } else {
+                if ($btnPagedLast) {
+                    $btnPagedLast.attr('disabled', 'disabled');
+                }
+                if ($btnPagedNext) {
+                    $btnPagedNext.attr('disabled', 'disabled');
+                }
+            }
+        },
+        bindPagination: function () {
+            // 绑定翻页控件
+            var self = this;
+            var zp = self.zepto;
+            var $footer = zp.next('div.ui-footer');
+            var $btnPagedFirst = $footer.find('button.hw-btn-paged-first'),
+                $btnPagedLast = $footer.find('button.hw-btn-paged-last'),
+                $btnPagedPrev = $footer.find('button.hw-btn-paged-prev'),
+                $btnPagedNext = $footer.find('button.hw-btn-paged-next');
+
+            $btnPagedFirst.click(function () {
+                self.options.page = 1;
+                self.reload();
+            });
+            $btnPagedLast.click(function () {
+                self.options.page = Math.ceil(self.options.total * 1.0 / self.options.rows);
+                self.reload();
+            });
+            $btnPagedNext.click(function () {
+                self.options.page--;
+                self.reload();
+            });
+            $btnPagedPrev.click(function () {
+                self.options.page++;
+                self.reload();
+            });
+        },
+        genHtml: function (rows) {
             var self = this;
             var html = '';
             for (var i = 0; i < rows.length; i++) {
-                rows[i].index = i;
-                html += self.template.replace(/[{]{2}\w+[}]{2}/g,
-                    function (m, p1, p2) {
-                        return rows[i][m.substring(2, m.length - 2)];
-                    });
+                var row = rows[i];
+                row.index = i;
+                html += formatter(self.template, row);
                 var buttons = self.options.buttons;
                 if (buttons && buttons.length > 0) {
                     for (var j = 0; j < buttons.length; j++) {
@@ -44,104 +157,32 @@
         reload: function () {
             var self = this;
             var el = $.loading({content: '加载中...'});
+            var queryParams = {};
+            if (self.options.getQueryParams) {
+                queryParams = self.options.getQueryParams();
+            }
             $.post(self.options.url, $.extend({
                 page: self.options.page,
                 rows: self.options.rows
-            }, self.options.getQueryParams()), function (data) {
+            }, queryParams), function (data) {
                 self.data = data;
-                var $dl = self.zepto;
+                var zp = self.zepto;
                 if (!self.isInited) {
                     // 第一次加载 需要初始化分页控件
                     self.isInited = true;
-                    self.template = $dl.html();
-                    $dl.html(self.formatter(data.rows)).show()
-                        .parent().append(self.btnHtml + '<div class="ui-footer ui-footer-stable ui-btn-group ui-border-t"><button id="btnFirst" class="ui-btn-lg ui-btn-primary">首页</button><button id="btnPrev" class="ui-btn-lg ui-btn-primary">上一页</button><button id="btnNext" class="ui-btn-lg ui-btn-primary">下一页</button><button id="btnLast" class="ui-btn-lg ui-btn-primary">尾页</button></div>');
-                    // 绑定翻页控件
-                    $('button.hw-btn-paged').click(function () {
-                        self.options.page = self.options.page || 1;
-                        switch (this.id) {
-                            case 'btnFirst':
-                                self.options.page = 1;
-                                break;
-                            case 'btnPrev':
-                                self.options.page--;
-                                break;
-                            case 'btnNext':
-                                self.options.page++;
-                                break;
-                            case 'btnLast':
-                                self.options.page = Math.ceil(self.options.total * 1.0 / self.options.rows);
-                                break;
-                        }
-                        self.reload();
-                    });
+                    self.template = zp.html();
+                    zp.html(self.genHtml(data.rows)).show();
                 } else {
                     // 再次加载，不用初始化分页控件
-                    $dl.html(self.formatter(data.rows));
+                    zp.html(self.genHtml(data.rows));
                 }
-
-                //遍历buttons 定位 绑定点击事件
-                var btnWidth, firstBtnWidth;
-                var buttons = self.options.buttons;
-                if (buttons && buttons.length > 0) {
-                    btnWidth = 0;
-                    for (var j = buttons.length - 1; j >= 0; j--) {
-                        var button = buttons[j];
-                        var $buttons = $('span.' + button.btnCls);
-                        if ($buttons.length > 0) {
-                            var _width = $buttons.first().width();
-                            if (j == buttons.length - 1) {
-                                firstBtnWidth = _width;
-                            }
-                            btnWidth += _width;
-                        }
-                        $buttons.each(function () {
-                            var $self = $(this);
-                            var index = parseInt($self.attr('data-index'));
-                            var windowWidth = window.innerWidth;
-                            var height = $dl.children().first().height();
-                            $self.css({
-                                height: (height) + 'px',
-                                'line-height': height + 'px',
-                                left: (windowWidth - btnWidth) + 'px',
-                                top: (index * height) + 'px'
-                            });
-                            $self.click(function () {
-                                var row = data.rows[index];
-                                button.handler(row);
-                            });
-                        })
-                    }
+                if (self.btnHtml) {
+                    zp.after(self.btnHtml);
+                    //遍历buttons 定位 绑定点击事件
+                    self.bindListButton();
                 }
-
-                //绑定列表的滑动事件
-                $dl.children().slider({
-                    hooke: 0.2,
-                    totalWidth: btnWidth,
-                    threshold: firstBtnWidth
-                });
-
                 // 分页控件启用与禁用
-                if (self.options.page > 1) {
-                    $('#btnPrev').removeAttr('disabled');
-                    $('#btnFirst').removeAttr('disabled');
-                } else {
-                    $('#btnPrev').attr('disabled', 'diabled');
-                    $('#btnFirst').attr('disabled', 'diabled');
-                }
-                self.options.total = data.total;
-                var totalPage = Math.ceil(self.options.total * 1.0 / self.options.rows);
-                if (self.options.page < totalPage) {
-                    $('#btnNext').removeAttr('disabled');
-                    $('#btnLast').removeAttr('disabled');
-                } else if (self.options.page > totalPage) {
-                    self.options.page = totalPage;
-                    self.reload();
-                } else {
-                    $('#btnNext').attr('disabled', 'diabled');
-                    $('#btnLast').attr('disabled', 'diabled');
-                }
-                self.options.pageIndex = data.PageIndex;
+                self.controlPagination();
                 el.loading("hide");
             }, 'json');
         }
@@ -216,4 +257,5 @@
             }
         }
     };
-})(Zepto);
+})
+(Zepto);
