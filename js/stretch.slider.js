@@ -19,13 +19,14 @@
             var zp = self.zepto;
             var totalWidth = self.options.totalWidth;
             var threshold = self.options.threshold;
+            var startSpeed = self.options.startSpeed;
+            var hooke = self.options.hooke;
             if (!zp)return;
             var startLeft, startPositionX, endPositionX, deltaX, shift;
             zp.bind('touchstart', function (e) {
                 var $self = $(this);
                 var touch = e.touches[0];
                 startPositionX = touch.pageX;
-                startPositionY = touch.pageY;
                 startLeft = $self.offset().left;
                 //解决android下touchmove只执行一下,touchend不触发的bug
                 event.preventDefault();
@@ -49,42 +50,34 @@
             }).bind('touchend', function (e) {
                 var $self = $(this);
                 if (shift + threshold >= 0) {//未达到弹性阈值,弹回
-                    self.slide({zp: $self, end: 0});
+                    $self.stretch(0, startSpeed, hooke);
                 } else {//达到弹性阈值,弹开
-                    self.slide({zp: $self, end: -totalWidth, startSpeed: 0.2});//初始速度稍大,弹开更流畅
+                    $self.stretch(-totalWidth, 0.2, hooke);//初始速度稍大,弹开更流畅
                 }
             });
-        },
-        slide: function (params) {
-            var self = this;
-            var end = params.end;
-            var startSpeed = params.startPosition || self.options.startSpeed;
-            var zp = params.zp;
-            var start = zp.offset().left;
-            var hooke = self.options.hooke;
-            var amplitude = end - start;
-            var sign = amplitude > 0 ? 1 : -1;
-            var shiftSqure = amplitude * amplitude;
-            var speed = startSpeed;
-            speed *= sign;
-            var intervalId = window.setInterval(function () {
-                zp.css({left: start += speed});
-                var shift = end - start;
-                if (amplitude * shift <= 0) {
-                    clearInterval(intervalId);
-                    zp.css({left: end});
-                }
-                speed = hooke * Math.sqrt(shiftSqure - shift * shift);
-                speed = speed != 0 ? speed : startSpeed;
-                speed *= sign;
-            }, 10);
-        },
-        reset: function () {
-            var self = this;
-            var zp = self.zepto;
-            console.log('startPosition', self.startPosition);
-            zp.css(self.startPosition);
         }
+    };
+
+    $.fn.stretch = function (end, startSpeed, hooke) {
+        var $self = $(this);
+        var start = $self.offset().left;
+        var amplitude = end - start;
+        var interval = 10;//ms
+        var sign = amplitude > 0 ? 1 : -1;
+        var amplitudeSqure = amplitude * amplitude;
+        var speed = startSpeed;
+        speed *= sign;
+        var intervalId = setInterval(function () {
+            $self.css({left: start += speed});
+            var shift = end - start;
+            if (amplitude * shift <= 0) {
+                clearInterval(intervalId);
+                $self.css({left: end});
+            }
+            speed = hooke * Math.sqrt(amplitudeSqure - shift * shift);
+            speed = !isNaN(speed) && speed != 0 ? speed : startSpeed;
+            speed *= sign;
+        }, interval);
     };
 
     $.fn.slider = function (arg1, arg2) {
