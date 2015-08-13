@@ -89,7 +89,7 @@
         </div>
     </div>
     <section class="ui-container" style="position: relative; top: 90px; border-top-width: 0;">
-        <ul id="dg" class="hw-datalist ui-list ui-list-pure ui-border-b" style="display: none;">
+        <ul id="dl" class="hw-datalist ui-list ui-list-pure ui-border-b" style="display: none;">
             <li data-index="{{index}}" class="ui-border-t">
                 <div class="ui-list-info">
                     <ul class="ui-tiled">
@@ -104,61 +104,62 @@
             </li>
         </ul>
         <div class="ui-footer ui-footer-stable ui-btn-group ui-border-t">
-            <button id="btnFirst" class="hw-btn-paged ui-btn-lg ui-btn-primary">首页</button>
-            <button id="btnPrev" class="hw-btn-paged ui-btn-lg ui-btn-primary">上一页</button>
-            <button id="btnNext" class="hw-btn-paged ui-btn-lg ui-btn-primary">下一页</button>
-            <button id="btnLast" class="hw-btn-paged ui-btn-lg ui-btn-primary">尾页</button>
+            <button class="hw-btn-paged hw-btn-paged-first ui-btn-lg ui-btn-primary">首页</button>
+            <button class="hw-btn-paged hw-btn-paged-prev ui-btn-lg ui-btn-primary">上一页</button>
+            <button class="hw-btn-paged hw-btn-paged-next ui-btn-lg ui-btn-primary">下一页</button>
+            <button class="hw-btn-paged hw-btn-paged-last ui-btn-lg ui-btn-primary">尾页</button>
         </div>
     </section>
 </div>
 <div id="Js_Include">
     <script type="text/javascript" src="../lib/zepto.min.js?v=935974?ver=2.3"></script>
     <script type="text/javascript" src="../js/stretch.slider.js?v=935974?ver=2.3"></script>
+    <script type="text/javascript" src="../js/stretch.common.js?v=935974?ver=2.3"></script>
     <script type="text/javascript" src="../js/stretch.datalist.js?v=935974?ver=2.3"></script>
     <script type="text/javascript" src="../lib/frozen.js?v=935974?ver=2.3"></script>
 </div>
 <script type="text/javascript">
     $(function () {
         //zepto对象
-        var $dg = $('#dg'),
-            $advQryLis = $('#ul-AdvQry li'),
-            $liComQry = $('#liComQry'),
-            $liSearch = $('#li-search'),
-            $liAdvQry = $('#li-advQry'),
-            $liSort = $('#li-sort'),
-            $dlgComQry = $('#dlg-ComQry'),
-            $dlgAdvQry = $('#dlg-AdvQry'),
-            $dlgSort = $('#dlg-Sort'),
-            $ulComQry = $('#ul-ComQry'),
-            $ulHeaderMenu = $('#ulHeaderMenu'),
-            $divSearch = $('#divSearch'),
-            $lbSearch = $('#lbSearch'),
-            $txtSearch = $('#txtSearch'),
-            $iClearSearch = $('#iClearSearch'),
-            $ulSort = $('#ul-Sort'),
-            $btnSearch = $('#btnSearch'),
-            $btnCancelSearch = $('#btnCancelSearch'),
-            $btnSure = $('#btnSure'),
-            $btnClear = $('#btnClear');
+        var $dl = $('#dl'),
+                $advQryLis = $('#ul-AdvQry li'),
+                $liComQry = $('#liComQry'),
+                $liSearch = $('#li-search'),
+                $liAdvQry = $('#li-advQry'),
+                $liSort = $('#li-sort'),
+                $dlgComQry = $('#dlg-ComQry'),
+                $dlgAdvQry = $('#dlg-AdvQry'),
+                $dlgSort = $('#dlg-Sort'),
+                $ulComQry = $('#ul-ComQry'),
+                $ulHeaderMenu = $('#ulHeaderMenu'),
+                $divSearch = $('#divSearch'),
+                $lbSearch = $('#lbSearch'),
+                $txtSearch = $('#txtSearch'),
+                $iClearSearch = $('#iClearSearch'),
+                $ulSort = $('#ul-Sort'),
+                $btnSearch = $('#btnSearch'),
+                $btnCancelSearch = $('#btnCancelSearch'),
+                $btnSure = $('#btnSure'),
+                $btnClear = $('#btnClear');
 
         var checkedCondition = [];
-        $dg.datalist({
+        $dl.datalist({
             url: 'datalist.json',
             buttons: [
                 {
-                    text: '详细信息', btnCls: 'hw-btn-more', handler: function (row) {
-                        console.log('详细信息', row);
-                    }
+                    text: '详细信息', btnCls: 'hw-btn-more', handler: function (index, row) {
+                    console.log('详细信息第' + index + '行', row);
+                }
                 },
                 {
-                    text: '编辑', btnCls: 'hw-btn-edit', handler: function (row) {
-                        console.log('编辑', row);
-                    }
+                    text: '编辑', btnCls: 'hw-btn-edit', handler: function (index, row) {
+                    console.log('编辑第' + index + '行', row);
+                }
                 },
                 {
-                    text: '删除', btnCls: 'hw-btn-delete', handler: function (row) {
-                        console.log('删除', row);
-                    }
+                    text: '删除', btnCls: 'hw-btn-delete', handler: function (index, row) {
+                    console.log('删除第' + index + '行', row);
+                }
                 }
             ],
             getQueryParams: function () {
@@ -204,7 +205,7 @@
             $ulComQry.find('li').click(function () {
                 $(this).addClass('ui-selected').siblings().removeClass('ui-selected');
 
-                $dg.datalist('reload');
+                $dl.datalist('reload');
                 $dlgComQry.hide();
             });
         }, 'json');
@@ -303,7 +304,7 @@
         });
         //选定排序
         $ulSort.find('input[type=radio]').click(function () {
-            $dg.datalist('reload');
+            $dl.datalist('reload');
             $dlgSort.dialog('hide');
         });
         //点击弹出层其他部位关闭弹出层
@@ -355,7 +356,7 @@
         };
         //搜索按钮点击
         $btnSearch.click(function () {
-            $dg.datalist('reload');
+            $dl.datalist('reload');
             $txtSearch.focus();
         });
         //清空搜索框
@@ -365,7 +366,7 @@
         //搜索框回车
         $txtSearch.keydown(function () {
             if (event.keyCode == 13) {
-                $dg.datalist('reload');
+                $dl.datalist('reload');
             }
         });
         //取消搜索
@@ -383,7 +384,7 @@
                     checkedCondition.push($self);
                 }
             });
-            $dg.datalist('reload');
+            $dl.datalist('reload');
             $dlgAdvQry.dialog('hide');
             $liAdvQry.find('i').css({color: '#000'});
             $('#ul-AdvQry li').each(function () {
