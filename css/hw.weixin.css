@@ -1,14 +1,18 @@
-.hw-datalist {
-    display: none;
+.hw-list, .hw-datalist {
     background-color: transparent;
 }
 
-.hw-datalist > li {
+.hw-list > li, .hw-datalist > li {
     position: relative;
+    margin-left: 0px;
+    padding-left: 15px;
+    z-index: 1;
+    background-color: white;
+}
+
+.hw-datalist > li {
     height: 35px;
     line-height: 35px;
-    z-index:1;
-    background-color: white;
 }
 
 li.header-left {
@@ -85,13 +89,13 @@ li.header-right {
     display: block;
 }
 
-.hw-btn-list{
+.hw-btn-list {
     display: inline;
     position: absolute;
     text-align: center;
     z-index: 0;
-    line-height:35px;
-    padding:0 20px;
+    line-height: 35px;
+    padding: 0 20px;
 }
 
 .hw-btn-delete {
@@ -104,7 +108,7 @@ li.header-right {
     color: white;
 }
 
-.hw-btn-more{
+.hw-btn-more {
     background-color: #ddd;
     color: #333;
 }
@@ -127,20 +131,17 @@ li.header-right {
     height: 30px;
     vertical-align: middle;
     padding-left: 5px;
-    padding-right: 24px;
     line-height: 16px;
 }
 
 .item-input input {
     -webkit-box-flex: 1;
     flex: 1 220px;
-    padding-right: 24px;
     background-color: transparent;
     outline-offset: 0;
     outline-style: none;
     outline-width: 0;
     -webkit-font-smoothing: inherit;
-    background-image: none;
     border: 0;
 }
 

@@ -32,16 +32,23 @@
         </li>
         <li id="li-sort">排序&nbsp;<i class="iconfont">&#xe60d;</i></li>
     </ul>
-    <div id="divSearch" style="padding: 3px; position: absolute; top: 45px; display: none;">
-        <label id="lbSearch" class="item item-input"
-               style="display: inline-block; border: 1px solid #ccc; line-height: 25px;">
-            <i class="iconfont">&#xe60b;</i><input id="txtSearch" placeholder="搜索客户名称" type="text"
-                                                   style="padding-right: 0;"/><i id="iClearSearch" class="iconfont">
-            &#xe609;</i>
-        </label>
-        <button id="btnSearch" class="ui-btn ui-btn-primary" style="display: none; margin-right: 5px;">搜索</button>
-        <button id="btnCancelSearch" class="ui-btn ui-btn-primary" style="margin-right: 5px;">取消</button>
-    </div>
+    <table id="tbSearch" style="width:100%; padding: 3px; position: absolute; top: 45px; display: none;">
+        <tr>
+            <td>
+                <label id="lbSearch" class="item item-input"
+                       style="display: inline-block; border: 1px solid #ccc; line-height: 25px; padding:2px 5px; width:100%; margin-left:5px;">
+                    <i class="iconfont" style="float:left; margin-top:2px;">&#xe60b;</i>
+                    <i id="iClearSearch" class="iconfont" style="float:right;margin-top:2px;">&#xe609;</i>
+                    <input id="txtSearch" placeholder="搜索客户名称" type="text" style="width:80%;"/>
+                </label>
+            </td>
+            <td style="width:100px; text-align:right;">
+                <button id="btnSearch" class="ui-btn ui-btn-primary" style="display: none; margin-right:10px;">搜索
+                </button>
+                <button id="btnCancelSearch" class="ui-btn ui-btn-primary" style=" margin-right:10px;">取消</button>
+            </td>
+        </tr>
+    </table>
     <div id="dlg-ComQry" class="ui-dropmenu ui-in ui-pos-bottom-center" style="display: none; top: 40px;">
         <ul id="ul-ComQry" class="ui-dropmenu-items" style="height: 200px; overflow: scroll;">
         </ul>
@@ -120,7 +127,6 @@
 </div>
 <script type="text/javascript">
     $(function () {
-        //zepto对象
         var $dl = $('#dl'),
                 $advQryLis = $('#ul-AdvQry li'),
                 $liComQry = $('#liComQry'),
@@ -132,8 +138,7 @@
                 $dlgSort = $('#dlg-Sort'),
                 $ulComQry = $('#ul-ComQry'),
                 $ulHeaderMenu = $('#ulHeaderMenu'),
-                $divSearch = $('#divSearch'),
-                $lbSearch = $('#lbSearch'),
+                $tbSearch = $('#tbSearch'),
                 $txtSearch = $('#txtSearch'),
                 $iClearSearch = $('#iClearSearch'),
                 $ulSort = $('#ul-Sort'),
@@ -173,7 +178,6 @@
                 }
             }
         });
-
         /**
          * @获取指定name的选择框的选中项
          * @name {String} 选择框的name属性值
@@ -189,7 +193,6 @@
             }
             return checked;
         }
-
         //加载快速搜索列表
         $.post('Page1.aspx?action=qrycom', {}, function (data) {
             var html = '';
@@ -243,7 +246,7 @@
                         html += '<li><label class="ui-checkbox"><input id="chk-' + id + '-' + item.value + '" type="checkbox" name="' + id + '" value="' + item.value + '" />' + item.text + '</label></li>';
                     }
                     html += '</ul>';
-                    $('#div-AdvQry').append(html);
+                    $('#div-AdvQry').append(html, null);
                     $('#ul-' + id).show().siblings().filter('[name=AdvQry]').hide();
                     $self.attr('inited', true);
                     resize();
@@ -255,7 +258,7 @@
                         var num = $checkboxs.filter(':checked').length;
                         $badgeNum.remove();
                         if (num > 0) {
-                            $self.append('<div class="ui-badge-num">' + num + '</div>');
+                            $self.append('<div class="ui-badge-num">' + num + '</div>', null);
                         }
                     });
                 }, 'json');
@@ -269,7 +272,7 @@
         //搜索
         $liSearch.click(function () {
             $ulHeaderMenu.hide();
-            $divSearch.show();
+            $tbSearch.show();
             $txtSearch.show().focus();
         });
         //筛选条件
@@ -334,16 +337,14 @@
             $liSort.find('i').html('&#xe60d;');
         });
         //屏幕大小自适应
+        resize();
         $(window).resize(resize);
         function resize() {
             var width = window.innerWidth;
-            $lbSearch.css({width: width - 95 + 'px'});
-            $txtSearch.css({width: width - 138 + 'px'});
             $('label.ui-checkbox').css({width: (width - 60) / 2 + 'px'});
             $ulComQry.css({left: (width - 250) / 2 + 'px'});
             $dlgComQry.css({left: (width - 125) / 2 + 'px'});
         };
-
         //搜索框回车搜索
         $txtSearch[0].oninput = function () {
             if ($txtSearch.val().length > 0) {
@@ -371,7 +372,7 @@
         });
         //取消搜索
         $btnCancelSearch.click(function () {
-            $divSearch.hide();
+            $tbSearch.hide();
             $ulHeaderMenu.show();
             $txtSearch.val('');
         });

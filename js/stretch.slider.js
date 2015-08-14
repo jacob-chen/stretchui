@@ -2,6 +2,13 @@
  * Created by user1 on 2015/8/12.
  */
 (function ($) {
+    /**
+     * @滑动组件对象构造方法
+     * @authoer 陈柄宏
+     * @date 2015-8-12
+     * @param zp {Zepto Object} 要绑定到的Zepto对象
+     * @param options {Object} 初始化参数
+     * */
     var slider = function (zp, options) {
         var self = this;
         self.options = $.extend(self.options, options);//私有变量
@@ -9,7 +16,9 @@
         self.startPosition = zp.offset();
         self.init();
     };
-
+    //@滑动组件对象原型
+    //@author 陈柄宏
+    //@date 2015-8-12
     slider.prototype = {
         options: {hooke: 0.2, startSpeed: 0.01},
         zepto: null,
@@ -57,8 +66,16 @@
             });
         }
     };
-
-    $.fn.stretch = function (end, startSpeed, hooke) {
+    /**
+     * @弹到指定位置
+     * @authoer 陈柄宏
+     * @date 2015-8-12
+     * @param end {Number} 指定位置
+     * @param startSpeed {Number} 初始速度
+     * @param hooke {Number} 弹性系数
+     * @param callBack {Function} 到达指定位置时调用的方法
+     * */
+    $.fn.stretch = function (end, startSpeed, hooke,callBack) {
         var $self = $(this);
         var start = $self.offset().left;
         var amplitude = end - start;
@@ -73,13 +90,22 @@
             if (amplitude * shift <= 0) {
                 clearInterval(intervalId);
                 $self.css({left: end});
+                if(typeof(callBack)=='function'){
+                    callBack();
+                }
             }
             speed = hooke * Math.sqrt(amplitudeSqure - shift * shift);
             speed = !isNaN(speed) && speed != 0 ? speed : startSpeed;
             speed *= sign;
         }, interval);
     };
-
+    /**
+     * @滑动组件公共接口
+     * @authoer 陈柄宏
+     * @date 2015-8-12
+     * @param arg1 {Object|String} Object 初始化参数 String 调用方法名
+     * @param arg2 {Object} 调用方法参数
+     * */
     $.fn.slider = function (arg1, arg2) {
         var self = this;
         var type = typeof(arg1);
@@ -96,7 +122,9 @@
                 break;
         }
     };
-
+    //@滑动组件公共接口方法
+    //@author 陈柄宏
+    //@date 2015-8-12
     $.fn.slider.method = {
         slide: function (params) {
             var obj = $.fn.slider.obj;

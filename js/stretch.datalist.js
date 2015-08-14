@@ -1,12 +1,20 @@
 ﻿(function ($) {
-    //分页控件
+    /**
+     * @数据列表组件对象构造方法
+     * @authoer 陈柄宏
+     * @date 2015-8-12
+     * @param zp {Zepto Object} 要绑定到的Zepto对象
+     * @param options {Object} 初始化参数
+     * */
     function datalist(zp, options) {
         var self = this;
         self.options = $.extend(self.options, options);//私有变量
         self.zepto = zp;
         self.init();
     };
-
+    //@数据列表组件对象原型
+    //@author 陈柄宏
+    //@date 2015-8-12
     datalist.prototype = {
         options: {page: 1, rows: 5, total: 0},
         zepto: null,
@@ -54,17 +62,17 @@
                     })
                 }
             }
-            //绑定列表的滑动事件
+            //绑定列表的数据列表事件
             zp.children().slider({
                 hooke: 0.2,//胡克弹性系数
-                totalWidth: btnWidth,//滑动最大范围
-                threshold: firstBtnWidth//滑动弹开阈值
+                totalWidth: btnWidth,//数据列表最大范围
+                threshold: firstBtnWidth//数据列表弹开阈值
             });
         },
         controlPagination: function () {
             var self = this;
             var zp = self.zepto;
-            var data=self.data;
+            var data = self.data;
             var $footer = zp.next('div.ui-footer');
             var $btnPagedFirst = $footer.find('button.hw-btn-paged-first'),
                 $btnPagedLast = $footer.find('button.hw-btn-paged-last'),
@@ -125,11 +133,11 @@
                 self.reload();
             });
             $btnPagedNext.click(function () {
-                self.options.page--;
+                self.options.page++;
                 self.reload();
             });
             $btnPagedPrev.click(function () {
-                self.options.page++;
+                self.options.page--;
                 self.reload();
             });
         },
@@ -184,14 +192,18 @@
                 // 分页控件启用与禁用
                 self.controlPagination();
                 el.loading("hide");
+                if (typeof(self.options.onLoadSuccess) == 'function') {
+                    self.options.onLoadSuccess(data);
+                }
             }, 'json');
         }
     };
-
     /**
-     * @数据列表zepto方法
-     * @param arg1 {Object|String} 初始化对象或方法名
-     * @param arg2 {Object} 给调用方法传递的参数
+     * @数据列表组件公共接口
+     * @authoer 陈柄宏
+     * @date 2015-8-12
+     * @param arg1 {Object|String} Object 初始化参数 String 调用方法名
+     * @param arg2 {Object} 调用方法参数
      * */
     $.fn.datalist = function (arg1, arg2) {
         var self = this;
@@ -209,10 +221,9 @@
                 break;
         }
     };
-
-    /**
-     * @方法对象
-     * */
+    //@数据列表组件公共接口方法
+    //@author 陈柄宏
+    //@date 2015-8-12
     $.fn.datalist.method = {
         load: function () {
             var obj = $.fn.datalist.obj;
